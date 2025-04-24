@@ -1,0 +1,75 @@
+/**app.wxss**/
+page {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
+    Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei',
+    sans-serif;
+  box-sizing: border-box;
+  background-color: #f6f6f6;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding: 20rpx;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  color: #333333;
+}
+
+.param-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.param-item:last-child {
+  border-bottom: none;
+}
+
+.param-label {
+  color: #666666;
+  font-size: 28rpx;
+}
+
+.param-value {
+  color: #333333;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #1296db;
+  color: #ffffff;
+  border-radius: 10rpx;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.btn-default {
+  background-color: #f6f6f6;
+  color: #666666;
+  border-radius: 10rpx;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  text-align: center;
+  border: 1rpx solid #dddddd;
+} 

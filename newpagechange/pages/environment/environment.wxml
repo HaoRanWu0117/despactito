@@ -1,0 +1,101 @@
+<!--pages/environment/environment.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">工业场景应用</text>
+  </view>
+  
+  <!-- 气体环境监测 -->
+  <view class="section-title">气体监测</view>
+  <view class="grid-panel">
+    <!-- 甲醛 HCHO -->
+    <view class="grid-card">
+      <view class="card-title">甲醛(HCHO)</view>
+      <view class="card-value {{isAbnormal('hcho', envData.hcho) ? 'abnormal' : ''}}">
+        <text class="value-text">{{envData.hcho}}</text>
+        <text class="value-unit">{{ranges.hcho.unit}}</text>
+      </view>
+      <view class="card-range">{{ranges.hcho.description}}</view>
+    </view>
+    
+    <!-- 氧气 O2 -->
+    <view class="grid-card">
+      <view class="card-title">氧气(O₂)</view>
+      <view class="card-value {{isAbnormal('o2', envData.o2) ? 'abnormal' : ''}}">
+        <text class="value-text">{{envData.o2}}</text>
+        <text class="value-unit">{{ranges.o2.unit}}</text>
+      </view>
+      <view class="card-range">{{ranges.o2.description}}</view>
+    </view>
+    
+    <!-- 二氧化碳 CO2 -->
+    <view class="grid-card">
+      <view class="card-title">二氧化碳(CO₂)</view>
+      <view class="card-value {{isAbnormal('co2', envData.co2) ? 'abnormal' : ''}}">
+        <text class="value-text">{{envData.co2}}</text>
+        <text class="value-unit">{{ranges.co2.unit}}</text>
+      </view>
+      <view class="card-range">{{ranges.co2.description}}</view>
+    </view>
+    
+    <!-- 挥发性有机物 TVOC -->
+    <view class="grid-card">
+      <view class="card-title">挥发性有机物(TVOC)</view>
+      <view class="card-value {{isAbnormal('tvoc', envData.tvoc) ? 'abnormal' : ''}}">
+        <text class="value-text">{{envData.tvoc}}</text>
+        <text class="value-unit">{{ranges.tvoc.unit}}</text>
+      </view>
+      <view class="card-range">{{ranges.tvoc.description}}</view>
+    </view>
+  </view>
+  
+  <!-- 体征监测 -->
+  <view class="section-title">体征监测</view>
+  <view class="grid-panel">
+    <!-- 体温 -->
+    <view class="grid-card">
+      <view class="card-title">体温</view>
+      <view class="card-value {{isBodyAbnormal('temperature', bodyData.temperature) ? 'abnormal' : ''}}">
+        <text class="value-text">{{bodyData.temperature}}</text>
+        <text class="value-unit">{{bodyRanges.temperature.unit}}</text>
+      </view>
+      <view class="card-range">{{bodyRanges.temperature.min}}-{{bodyRanges.temperature.max}}{{bodyRanges.temperature.unit}}</view>
+    </view>
+    
+    <!-- 血氧 -->
+    <view class="grid-card">
+      <view class="card-title">血氧含量</view>
+      <view class="card-value {{isBodyAbnormal('oxygen', bodyData.oxygen) ? 'abnormal' : ''}}">
+        <text class="value-text">{{bodyData.oxygen}}</text>
+        <text class="value-unit">{{bodyRanges.oxygen.unit}}</text>
+      </view>
+      <view class="card-range">{{bodyRanges.oxygen.min}}-{{bodyRanges.oxygen.max}}{{bodyRanges.oxygen.unit}}</view>
+    </view>
+    
+    <!-- 心率 -->
+    <view class="grid-card">
+      <view class="card-title">心跳频率</view>
+      <view class="card-value {{isBodyAbnormal('heartRate', bodyData.heartRate) ? 'abnormal' : ''}}">
+        <text class="value-text">{{bodyData.heartRate}}</text>
+        <text class="value-unit">{{bodyRanges.heartRate.unit}}</text>
+      </view>
+      <view class="card-range">{{bodyRanges.heartRate.min}}-{{bodyRanges.heartRate.max}}{{bodyRanges.heartRate.unit}}</view>
+    </view>
+    
+    <!-- 呼吸频率 -->
+    <view class="grid-card">
+      <view class="card-title">呼吸频率</view>
+      <view class="card-value {{isBodyAbnormal('respRate', bodyData.respRate) ? 'abnormal' : ''}}">
+        <text class="value-text">{{bodyData.respRate}}</text>
+        <text class="value-unit">{{bodyRanges.respRate.unit}}</text>
+      </view>
+      <view class="card-range">{{bodyRanges.respRate.min}}-{{bodyRanges.respRate.max}}{{bodyRanges.respRate.unit}}</view>
+    </view>
+  </view>
+  
+  <!-- MQTT连接信息 -->
+  <view class="mqtt-status-bar">
+    <text class="connection-status {{mqttConnectionStatus ? 'connected' : ''}}">
+      MQTT状态: {{mqttConnectionStatus ? '已连接' : '未连接'}}
+    </text>
+  </view>
+</view> 

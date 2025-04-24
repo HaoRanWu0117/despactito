@@ -1,0 +1,278 @@
+/* pages/body/body.wxss */
+.container {
+  padding: 30rpx;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-color: #f5f7fa;
+}
+
+/* 头部样式 */
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rpx 0;
+  margin-bottom: 40rpx;
+}
+
+.title {
+  font-size: 38rpx;
+  font-weight: bold;
+  color: #333;
+  position: relative;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -10rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 6rpx;
+  background-color: #1aad19;
+  border-radius: 3rpx;
+}
+
+.status {
+  font-size: 28rpx;
+  color: #999;
+  background-color: #f0f0f0;
+  padding: 10rpx 20rpx;
+  border-radius: 30rpx;
+}
+
+.status.connected {
+  color: #fff;
+  background-color: #07c160;
+}
+
+/* 四宫格面板样式 */
+.grid-panel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 30rpx;
+  flex: 1;
+  padding-bottom: 30rpx;
+}
+
+.grid-card {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.grid-card:active {
+  transform: scale(0.98);
+}
+
+.grid-card.abnormal {
+  background-color: #fff0f0;
+  box-shadow: 0 4rpx 20rpx rgba(255, 0, 0, 0.15);
+}
+
+.data-icon {
+  width: 90rpx;
+  height: 90rpx;
+  margin-bottom: 25rpx;
+}
+
+.data-icon image {
+  width: 100%;
+  height: 100%;
+}
+
+.data-title {
+  font-size: 30rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+}
+
+.data-value {
+  margin-bottom: 15rpx;
+  text-align: center;
+}
+
+.value-text {
+  font-size: 52rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.grid-card.abnormal .value-text {
+  color: #ff4d4f;
+}
+
+.value-unit {
+  font-size: 26rpx;
+  color: #999;
+  margin-left: 5rpx;
+}
+
+.data-range {
+  font-size: 24rpx;
+  color: #999;
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 10rpx;
+  width: 100%;
+  text-align: center;
+}
+
+/* 底部提示面板 */
+.footer-panel {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.connection-info {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+  margin-bottom: 10rpx;
+}
+
+.connection-tip {
+  font-size: 26rpx;
+  color: #999;
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+
+.btn-primary {
+  background-color: #1aad19;
+  color: #fff;
+  font-size: 30rpx;
+  border: none;
+  border-radius: 10rpx;
+  margin-top: 10rpx;
+}
+
+.btn-primary:active {
+  background-color: #159e14;
+}
+
+/* MQTT控制面板 */
+.mqtt-panel {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  margin-top: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.mqtt-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  text-align: center;
+  position: relative;
+}
+
+.mqtt-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 6rpx;
+  background-color: #1aad19;
+  border-radius: 3rpx;
+}
+
+.mqtt-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 30rpx 0;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.mqtt-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.mqtt-status {
+  font-size: 28rpx;
+  margin-right: 20rpx;
+  flex: 1;
+  text-align: center;
+}
+
+.mqtt-status.connected {
+  color: #07c160;
+  font-weight: bold;
+}
+
+.mqtt-status.disconnected {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+.mqtt-info {
+  margin-top: 20rpx;
+}
+
+.mqtt-info-item {
+  display: flex;
+  font-size: 26rpx;
+  margin-bottom: 15rpx;
+  align-items: center;
+}
+
+.mqtt-info-label {
+  color: #666;
+  width: 180rpx;
+  flex-shrink: 0;
+}
+
+.mqtt-info-value {
+  color: #333;
+  word-break: break-all;
+}
+
+/* 订阅主题输入框样式 */
+.mqtt-topic-input {
+  flex: 1;
+  height: 60rpx;
+  font-size: 26rpx;
+  color: #333;
+  background-color: #f5f7fa;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  border: 1px solid #e0e0e0;
+}
+
+/* 更新按钮样式 */
+.mqtt-button-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20rpx;
+}
+
+.btn-update-topic {
+  background-color: #1aad19;
+  color: #fff;
+  font-size: 24rpx;
+  padding: 6rpx 20rpx;
+  line-height: 1.8;
+  border-radius: 8rpx;
+} 

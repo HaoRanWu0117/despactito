@@ -1,0 +1,116 @@
+/* pages/map/map.wxss */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.map {
+  width: 100%;
+  height: 70vh;
+  flex-grow: 1;
+}
+
+.re-locate {
+  position: absolute;
+  right: 20rpx;
+  bottom: 200rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 0 10rpx rgba(0, 0, 0, 0.2);
+  padding: 10rpx;
+}
+
+.control-panel {
+  width: 100%;
+  background-color: #fff;
+  border-top-left-radius: 20rpx;
+  border-top-right-radius: 20rpx;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
+  padding: 30rpx;
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+.nav-info {
+  padding: 20rpx 0;
+  margin-bottom: 20rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15rpx;
+}
+
+.destination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.address {
+  margin-top: 10rpx;
+  padding: 10rpx;
+  background-color: #f8f8f8;
+  border-radius: 8rpx;
+}
+
+.address-text {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.4;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.value {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  flex: 1;
+  margin: 0 10rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 28rpx;
+  box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.1);
+}
+
+.start-btn {
+  background-color: #1aad19;
+  color: #fff;
+}
+
+.end-btn {
+  background-color: #f56c6c;
+  color: #fff;
+}
+
+.reroute-btn {
+  background-color: #409EFF;
+  color: #ffffff;
+  margin-top: 10rpx;
+} 

@@ -1,0 +1,157 @@
+/* bluetooth-comp/index.wxss */
+.devices_summary {
+  margin-top: 20rpx;
+  padding: 10rpx;
+  font-size: 30rpx;
+  color: #666;
+}
+
+.device-list {
+  max-height: 400rpx;
+  margin-top: 10rpx;
+  border: 1rpx solid #eee;
+  border-radius: 10rpx;
+}
+
+.device_item {
+  padding: 20rpx;
+  border-bottom: 1rpx solid #eee;
+  background-color: #fff;
+}
+
+.device_item_hover {
+  background-color: #f0f0f0;
+}
+
+.bluetooth-container {
+  padding: 20rpx;
+}
+
+.bluetooth-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background-color: #f8f8f8;
+  border-bottom: 1rpx solid #eee;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.status {
+  font-size: 26rpx;
+  color: #f56c6c;
+  background-color: rgba(245, 108, 108, 0.1);
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.status.connected {
+  color: #67c23a;
+  background-color: rgba(103, 194, 58, 0.1);
+}
+
+.content {
+  padding: 30rpx;
+}
+
+.device-info {
+  background-color: #f8f8f8;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.device-name, .device-id {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.message {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 20rpx;
+  min-height: 40rpx;
+}
+
+.btn {
+  margin: 20rpx 0;
+  width: 100%;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+}
+
+.search-btn {
+  background-color: #409eff;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #909399;
+  color: #fff;
+}
+
+.disconnect-btn {
+  background-color: #f56c6c;
+  color: #fff;
+}
+
+.searching {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20rpx 0;
+}
+
+.loading {
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #3498db;
+  border-radius: 50%;
+  margin-right: 10rpx;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.device-item {
+  padding: 20rpx;
+  border-bottom: 1rpx solid #eee;
+  position: relative;
+}
+
+.device-item:last-child {
+  border-bottom: none;
+}
+
+.device-item:active {
+  background-color: #f8f8f8;
+}
+
+.device-item-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 6rpx;
+}
+
+.device-item-id {
+  font-size: 24rpx;
+  color: #999;
+} 

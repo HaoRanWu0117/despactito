@@ -1,0 +1,44 @@
+<!--pages/map/map.wxml-->
+<view class="container">
+  <!-- 地图组件 - 极简配置减少错误 -->
+  <map class="map"
+    id="map"
+    latitude="{{latitude}}"
+    longitude="{{longitude}}"
+    scale="{{scale}}"
+    markers="{{markers}}"
+    polyline="{{polyline}}"
+    show-location>
+    
+    <!-- 重新定位按钮 -->
+    <image class="re-locate" src="../../images/re-locate.png" bindtap="reLocate"></image>
+  </map>
+  
+  <!-- 控制面板 -->
+  <view class="control-panel">
+    <view wx:if="{{isNavigating}}" class="nav-info">
+      <view class="info-item">
+        <text class="label">距离:</text>
+        <text class="value">{{formattedDistance}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">预计时间:</text>
+        <text class="value">{{duration}}分钟</text>
+      </view>
+      <view wx:if="{{endPoint && endPoint.name}}" class="destination">
+        <text class="label">目的地:</text>
+        <text class="value">{{endPoint.name}}</text>
+      </view>
+      <view wx:if="{{endPoint && endPoint.address}}" class="address">
+        <text class="address-text">{{endPoint.address}}</text>
+      </view>
+    </view>
+    
+    <view class="action-buttons">
+      <button wx:if="{{!isNavigating}}" class="action-btn" bindtap="chooseLocation">选择目的地</button>
+      <button wx:if="{{!isNavigating && endPoint}}" class="action-btn start-btn" bindtap="startNavigation">开始导航</button>
+      <button wx:if="{{isNavigating}}" class="action-btn end-btn" bindtap="endNavigation">结束导航</button>
+      <button wx:if="{{isNavigating}}" class="action-btn reroute-btn" bindtap="getRoute">重新规划路线</button>
+    </view>
+  </view>
+</view> 

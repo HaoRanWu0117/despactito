@@ -1,0 +1,36 @@
+<!--pages/warning/warning.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">道路预警</text>
+  </view>
+
+  <!-- 三车道布局 -->
+  <view class="road-container">
+    <view class="lanes-container">
+      <!-- 左车道 -->
+      <view class="lane">
+        <image class="car-icon" src="/images/car.png" wx:if="{{lanes[0].showCar}}"></image>
+      </view>
+
+      <!-- 左中分隔线 -->
+      <view class="lane-divider">
+        <view class="dash-line" wx:for="{{20}}" wx:key="index"></view>
+      </view>
+
+      <!-- 中间车道 -->
+      <view class="lane">
+        <image class="car-icon" src="/images/car.png" wx:if="{{lanes[1].showCar}}"></image>
+      </view>
+
+      <!-- 右中分隔线 -->
+      <view class="lane-divider">
+        <view class="dash-line" wx:for="{{20}}" wx:key="index"></view>
+      </view>
+
+      <!-- 右车道 -->
+      <view class="lane">
+        <image class="car-icon" src="/images/car.png" wx:if="{{lanes[2].showCar}}"></image>
+      </view>
+    </view>
+  </view>
+</view> 

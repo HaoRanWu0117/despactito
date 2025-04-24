@@ -1,0 +1,89 @@
+<!-- pages/warningmap/warningmap.wxml -->
+<view class="container">
+  <!-- 地图导航区域 -->
+  <view class="map-container">
+    <map
+      id="myMap"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}"
+      scale="{{scale}}"
+      markers="{{markers}}"
+      polyline="{{polyline}}"
+      include-points="{{includePoints}}"
+      show-location="true"
+      enable-3D="false"
+      enable-overlooking="false"
+      enable-satellite="false"
+      enable-traffic="false"
+      show-compass="true"
+      style="width: 100%; height: 100%;"
+    ></map>
+    
+    <!-- 地图操作按钮 -->
+    <view class="map-controls">
+      <view class="control-item" bindtap="reLocate">
+        <image src="../../images/re-locate.png" mode="aspectFit"></image>
+      </view>
+      <view class="control-item" bindtap="chooseLocation">
+        <image src="../../images/search.png" mode="aspectFit"></image>
+      </view>
+    </view>
+    
+    <!-- 导航信息 -->
+    <view class="nav-info {{isNavigating ? 'navigating' : ''}}">
+      <view class="info-content">
+        <view wx:if="{{!isNavigating && !endPoint}}" class="tips">
+          点击<text class="highlight">搜索图标</text>选择目的地
+        </view>
+        <view wx:elif="{{!isNavigating && endPoint}}" class="destination">
+          <text>目的地: {{endPoint.name || '未命名位置'}}</text>
+          <text>距离: {{formattedDistance}}</text>
+          <text>时间: {{duration}}分钟</text>
+          <button type="primary" size="mini" bindtap="startNavigation">开始导航</button>
+        </view>
+        <view wx:elif="{{isNavigating}}" class="navigating-info">
+          <text>距离目的地: {{formattedDistance}}</text>
+          <text>预计时间: {{duration}}分钟</text>
+          <button type="warn" size="mini" bindtap="endNavigation">结束导航</button>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 道路预警区域 -->
+  <view class="warning-container">
+    <view class="header">
+      <text class="title">道路预警</text>
+    </view>
+    
+    <!-- 三车道布局 -->
+    <view class="road-container">
+      <view class="lanes-container">
+        <!-- 左车道 -->
+        <view class="lane">
+          <image class="car-icon pulse" src="/images/car.png" wx:if="{{lanes[0].showCar}}"></image>
+        </view>
+
+        <!-- 左中分隔线 -->
+        <view class="lane-divider">
+          <view class="dash-line" wx:for="{{20}}" wx:key="index"></view>
+        </view>
+
+        <!-- 中间车道 -->
+        <view class="lane">
+          <image class="car-icon pulse" src="/images/car.png" wx:if="{{lanes[1].showCar}}"></image>
+        </view>
+
+        <!-- 右中分隔线 -->
+        <view class="lane-divider">
+          <view class="dash-line" wx:for="{{20}}" wx:key="index"></view>
+        </view>
+
+        <!-- 右车道 -->
+        <view class="lane">
+          <image class="car-icon pulse" src="/images/car.png" wx:if="{{lanes[2].showCar}}"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 
