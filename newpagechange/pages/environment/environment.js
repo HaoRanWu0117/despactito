@@ -1,14 +1,14 @@
+// environment.js
 const app = getApp();
 
 Page({
   data: {
     envData: {
-      hcho: 0.05,  // 甲醛：mg/m³
-      o2: 20.9,    // 氧气：%
-      co2: 400,    // 二氧化碳：ppm
-      tvoc: 0.2,   // 总挥发性有机物：mg/m³
+      hcho: '0.050',  // 甲醛：mg/m³
+      o2: 20.9,       // 氧气：%
+      co2: 400,       // 二氧化碳：ppm
+      tvoc: '0.200'   // 总挥发性有机物：mg/m³
     },
-    // 体征数据
     bodyData: {
       temperature: '36.5', // 体温(℃)
       oxygen: '98',        // 血氧(%)
@@ -16,66 +16,48 @@ Page({
       respRate: '16'       // 呼吸频率(次/分)
     },
     ranges: {
-      hcho: {
-        min: 0,
-        max: 0.1,
-        unit: 'mg/m³',
-        description: '安全值 ≤ 0.1 mg/m³'
-      },
-      o2: {
-        min: 19.5,
-        max: 23.5,
-        unit: '%',
-        description: '安全范围 19.5% - 23.5%'
-      },
-      co2: {
-        min: 350,
-        max: 1000,
-        unit: 'ppm',
-        description: '安全值 ≤ 1000 ppm'
-      },
-      tvoc: {
-        min: 0,
-        max: 0.6,
-        unit: 'mg/m³',
-        description: '安全值 ≤ 0.6 mg/m³'
-      }
+      hcho: { min: 0, max: 0.1, unit: 'mg/m³', description: '安全值 ≤ 0.1 mg/m³' },
+      o2: { min: 19.5, max: 23.5, unit: '%', description: '安全范围 19.5% - 23.5%' },
+      co2: { min: 350, max: 800, unit: 'ppm', description: '安全值 ≤ 800 ppm' },
+      tvoc: { min: 0, max: 0.6, unit: 'mg/m³', description: '安全值 ≤ 0.6 mg/m³' }
     },
-    // 体征指标的正常范围
     bodyRanges: {
       temperature: { min: 36, max: 37.3, unit: '℃' },
       oxygen: { min: 95, max: 100, unit: '%' },
       heartRate: { min: 60, max: 100, unit: 'bpm' },
       respRate: { min: 12, max: 20, unit: '次/分' }
     },
-    mqttConnectionStatus: false
+    mqttConnectionStatus: false,
+    warnings: {
+      hcho: false,
+      o2: false,
+      co2: false,
+      tvoc: false,
+      temperature: false,  // 新增：跟踪体温预警
+      oxygen: false,      // 新增：跟踪血氧预警
+      heartRate: false,   // 新增：跟踪心率预警
+      respRate: false     // 新增：跟踪呼吸频率预警
+    },
+    lastWarningTime: 0
   },
 
   onLoad: function () {
-    // 初始化数据
     this.updateEnvDataFromGlobal();
     this.updateBodyDataFromGlobal();
   },
 
   onShow: function() {
-    // 检查MQTT连接状态
     this.checkMqttStatus();
-    
-    // 从全局获取最新环境数据
     this.updateEnvDataFromGlobal();
-    // 从全局获取最新体征数据
     this.updateBodyDataFromGlobal();
-    
-    // 定时更新状态和数据 - 每5秒一次
     this.intervalId = setInterval(() => {
       this.checkMqttStatus();
       this.updateEnvDataFromGlobal();
       this.updateBodyDataFromGlobal();
     }, 5000);
   },
-  
+
   onHide: function() {
-    // 清除定时器
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
@@ -83,97 +65,173 @@ Page({
   },
 
   onUnload: function () {
-    // 清除定时器
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
   },
-  
-  // 检查MQTT连接状态
+
   checkMqttStatus: function() {
     this.setData({
       mqttConnectionStatus: app.globalData.mqttConnected
     });
   },
-  
-  // 从全局更新环境数据
+
   updateEnvDataFromGlobal: function() {
     if (app.globalData.environmentData) {
+      const envData = {
+        hcho: parseFloat(app.globalData.environmentData.hcho).toFixed(3),
+        o2: parseFloat(app.globalData.environmentData.o2).toFixed(1),
+        co2: parseInt(app.globalData.environmentData.co2),
+        tvoc: parseFloat(app.globalData.environmentData.tvoc).toFixed(3)
+      };
+      const warnings = { ...this.data.warnings };
+      warnings.hcho = parseFloat(envData.hcho) > this.data.ranges.hcho.max;
+      warnings.o2 = parseFloat(envData.o2) < this.data.ranges.o2.min || parseFloat(envData.o2) > this.data.ranges.o2.max;
+      warnings.co2 = parseInt(envData.co2) > this.data.ranges.co2.max;
+      warnings.tvoc = parseFloat(envData.tvoc) > this.data.ranges.tvoc.max;
       this.setData({
-        envData: app.globalData.environmentData
-      });
-    }
-  },
-  
-  // 从全局更新体征数据
-  updateBodyDataFromGlobal: function() {
-    if (app.globalData.bodyData) {
-      this.setData({
-        bodyData: app.globalData.bodyData
+        envData: envData,
+        warnings: warnings
       });
     }
   },
 
-  // 处理MQTT接收到的数据
+  updateBodyDataFromGlobal: function() {
+    if (app.globalData.bodyData) {
+      const bodyData = {
+        temperature: parseFloat(app.globalData.bodyData.temperature).toFixed(1),
+        oxygen: parseInt(app.globalData.bodyData.oxygen).toString(),
+        heartRate: parseInt(app.globalData.bodyData.heartRate).toString(),
+        respRate: parseInt(app.globalData.bodyData.respRate).toString()
+      };
+      const warnings = { ...this.data.warnings };
+      const now = Date.now();
+      // 检查体征数据异常
+      warnings.temperature = parseFloat(bodyData.temperature) < this.data.bodyRanges.temperature.min || 
+                            parseFloat(bodyData.temperature) > this.data.bodyRanges.temperature.max;
+      warnings.oxygen = parseInt(bodyData.oxygen) < this.data.bodyRanges.oxygen.min || 
+                        parseInt(bodyData.oxygen) > this.data.bodyRanges.oxygen.max;
+      warnings.heartRate = parseInt(bodyData.heartRate) < this.data.bodyRanges.heartRate.min || 
+                          parseInt(bodyData.heartRate) > this.data.bodyRanges.heartRate.max;
+      warnings.respRate = parseInt(bodyData.respRate) < this.data.bodyRanges.respRate.min || 
+                         parseInt(bodyData.respRate) > this.data.bodyRanges.respRate.max;
+      // 触发异常预警
+      if (warnings.temperature && now - this.data.lastWarningTime > 5000) {
+        this.showWarning('体温', bodyData.temperature, this.data.bodyRanges.temperature);
+        this.setData({ lastWarningTime: now });
+      }
+      if (warnings.oxygen && now - this.data.lastWarningTime > 5000) {
+        this.showWarning('血氧', bodyData.oxygen, this.data.bodyRanges.oxygen);
+        this.setData({ lastWarningTime: now });
+      }
+      if (warnings.heartRate && now - this.data.lastWarningTime > 5000) {
+        this.showWarning('心率', bodyData.heartRate, this.data.bodyRanges.heartRate);
+        this.setData({ lastWarningTime: now });
+      }
+      if (warnings.respRate && now - this.data.lastWarningTime > 5000) {
+        this.showWarning('呼吸频率', bodyData.respRate, this.data.bodyRanges.respRate);
+        this.setData({ lastWarningTime: now });
+      }
+      this.setData({
+        bodyData: bodyData,
+        warnings: warnings
+      });
+    }
+  },
+
   handleMQTTData: function (e) {
     try {
       const message = e.detail.message;
       const data = JSON.parse(message);
+      const now = Date.now();
+      let needUpdate = false;
+
+      // 环境数据处理（保持不变）
+      const newEnvData = { ...this.data.envData };
+      let newWarnings = { ...this.data.warnings };
+      if (data.hcho !== undefined) {
+        const value = parseFloat(data.hcho);
+        newEnvData.hcho = value.toFixed(3);
+        newWarnings.hcho = value > this.data.ranges.hcho.max;
+        
+        needUpdate = true;
+      }
+      if (data.o2 !== undefined) {
+        const value = parseFloat(data.o2);
+        newEnvData.o2 = value.toFixed(1);
+        newWarnings.o2 = value < this.data.ranges.o2.min || value > this.data.ranges.o2.max;
+        
+        needUpdate = true;
+      }
+      if (data.co2 !== undefined) {
+        const value = parseInt(data.co2);
+        newEnvData.co2 = value;
+        newWarnings.co2 = value > this.data.ranges.co2.max;
+       
+        needUpdate = true;
+      }
+      if (data.tvoc !== undefined) {
+        const value = parseFloat(data.tvoc);
+        newEnvData.tvoc = value.toFixed(3);
+        newWarnings.tvoc = value > this.data.ranges.tvoc.max;
+       
+        needUpdate = true;
+      }
+
+      // 新增：体征数据处理
+      const newBodyData = { ...this.data.bodyData };
+      if (data.body_temp !== undefined) {
+        const value = parseFloat(data.body_temp);
+        newBodyData.temperature = value.toFixed(1);
+        newWarnings.temperature = value < this.data.bodyRanges.temperature.min || value > this.data.bodyRanges.temperature.max;
+        
+        needUpdate = true;
+      }
+      if (data.blood_oxygen !== undefined) {
+        const value = parseInt(data.blood_oxygen);
+        newBodyData.oxygen = value.toString();
+        newWarnings.oxygen = value < this.data.bodyRanges.oxygen.min || value > this.data.bodyRanges.oxygen.max;
+        
+        needUpdate = true;
+      }
+      if (data.heart_rate !== undefined) {
+        const value = parseInt(data.heart_rate);
+        newBodyData.heartRate = value.toString();
+        newWarnings.heartRate = value < this.data.bodyRanges.heartRate.min || value > this.data.bodyRanges.heartRate.max;
       
-      // 更新本地环境数据
-      const newEnvData = {
-        hcho: data.hcho !== undefined ? parseFloat(data.hcho) : this.data.envData.hcho,
-        o2: data.o2 !== undefined ? parseFloat(parseFloat(data.o2).toFixed(1)) : this.data.envData.o2,
-        co2: data.co2 !== undefined ? parseInt(data.co2) : this.data.envData.co2,
-        tvoc: data.tvoc !== undefined ? parseFloat(data.tvoc) : this.data.envData.tvoc
-      };
-      
-      this.setData({
-        envData: newEnvData
-      });
+        needUpdate = true;
+      }
+      if (data.respiration_rate !== undefined) {
+        const value = parseInt(data.respiration_rate);
+        newBodyData.respRate = value.toString();
+        newWarnings.respRate = value < this.data.bodyRanges.respRate.min || value > this.data.bodyRanges.respRate.max;
+        
+        needUpdate = true;
+      }
+
+      if (needUpdate) {
+        this.setData({
+          envData: newEnvData,
+          bodyData: newBodyData,
+          warnings: newWarnings
+        });
+      }
     } catch (error) {
       console.error('解析MQTT数据错误:', error);
     }
   },
 
-  // 判断数值是否异常
-  isAbnormal: function (type, value) {
-    const range = this.data.ranges[type];
-    
-    if (type === 'o2') {
-      return value < range.min || value > range.max;
-    } else {
-      return value > range.max;
-    }
-  },
-  
-  // 判断体征指标值是否异常
-  isBodyAbnormal: function (type, value) {
-    // 转为数字进行比较
-    const numValue = parseFloat(value);
-    const range = this.data.bodyRanges[type];
-    
-    // 若值不是数字或超出范围则视为异常
-    return isNaN(numValue) || numValue < range.min || numValue > range.max;
-  },
-
-  // 计算进度条百分比
   getProgressPercent: function (type, value) {
-    const range = this.data.ranges[type];
+    const range = this.data.ranges[type] || this.data.bodyRanges[type];
     let percent;
-    
-    if (type === 'o2') {
-      // 对于氧气，进度是在正常范围内的位置
+    if (type === 'o2' || type === 'oxygen' || type === 'temperature' || type === 'heartRate' || type === 'respRate') {
       const fullRange = range.max - range.min;
       percent = ((value - range.min) / fullRange) * 100;
     } else {
-      // 对于有害气体，进度是相对最大安全值的比例
       percent = (value / range.max) * 100;
     }
-    
-    // 约束百分比在0-100之间
     percent = Math.max(0, Math.min(100, percent));
     return percent + '%';
   }
-}) 
+});

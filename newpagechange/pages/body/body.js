@@ -1,259 +1,160 @@
+// body.js
 const app = getApp();
 
 Page({
-  /**
-   * 页面的初始数据
-   */
   data: {
-    // 体征数据
     bodyData: {
-      temperature: '36.5', // 体温(℃)
-      oxygen: '98',        // 血氧(%)
-      heartRate: '75',     // 心率(bpm)
-      respRate: '16'       // 呼吸频率(次/分)
+      temperature: '36.5',
+      oxygen: '98',
+      heartRate: '75',
+      respRate: '16'
     },
-    // 各项指标的正常范围
     ranges: {
-      temperature: { min: 36, max: 37.3, unit: '℃' },
-      oxygen: { min: 95, max: 100, unit: '%' },
-      heartRate: { min: 60, max: 100, unit: 'bpm' },
-      respRate: { min: 12, max: 20, unit: '次/分' }
+      temperature: { min: 36, max: 37.3, unit: '℃', description: '安全范围 36-37.3℃' },
+      oxygen: { min: 95, max: 100, unit: '%', description: '安全范围 95-100%' },
+      heartRate: { min: 60, max: 100, unit: 'bpm', description: '安全范围 60-100 bpm' },
+      respRate: { min: 12, max: 20, unit: '次/分', description: '安全范围 12-20 次/分' }
     },
-    // 连接状态
-    isConnected: false,
-    // MQTT配置
-    mqttConfig: {},
-    // 主题是否已更改
-    topicChanged: false,
-    // 新主题
-    newTopic: ''
+    warnings: {
+      temperature: false,
+      oxygen: false,
+      heartRate: false,
+      respRate: false
+    },
+    lastWarningTime: 0,
+    updateTimestamp: Date.now(),
+    isPlaying: false // 新增：标记音频是否正在播放
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad: function (options) {
-    // 初始化界面 - 从全局获取数据
-    this.updateBodyDataFromGlobal();
-    // 获取MQTT配置
-    this.setData({
-      mqttConfig: app.globalData.mqttConfig,
-      newTopic: app.globalData.mqttConfig.subTopic
+  onLoad: function () {
+    // 初始化音频上下文
+    this.audioCtx = wx.createInnerAudioContext();
+    this.audioCtx.src = '/audio/temperature_warning.mp3';
+
+    // 监听音频播放结束
+    this.audioCtx.onEnded(() => {
+      this.setData({ isPlaying: false });
+      // 音频播放结束后，检查是否需要5秒后再次播放
+      if (this.data.warnings.temperature) {
+        this.scheduleNextWarning();
+      }
+    });
+
+    // 监听音频播放错误
+    this.audioCtx.onError((res) => {
+      console.error('体温预警音频播放错误:', res);
+      this.setData({ isPlaying: false });
+      // 即使出错，也尝试5秒后重新播放（如果仍异常）
+      if (this.data.warnings.temperature) {
+        this.scheduleNextWarning();
+      }
     });
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow: function () {
-    // 检查MQTT连接状态
-    this.checkMqttStatus();
-    
-    // 从全局获取最新身体数据
-    this.updateBodyDataFromGlobal();
-    
-    // 定时更新状态和数据 - 每5秒一次
-    this.intervalId = setInterval(() => {
-      this.checkMqttStatus();
-      this.updateBodyDataFromGlobal();
+  onShow: function () {},
+
+  onHide: function () {
+    // 清除定时器
+    if (this.warningTimer) {
+      clearTimeout(this.warningTimer);
+      this.warningTimer = null;
+    }
+  },
+
+  onUnload: function () {
+    // 清除定时器
+    if (this.warningTimer) {
+      clearTimeout(this.warningTimer);
+      this.warningTimer = null;
+    }
+    // 销毁音频上下文
+    if (this.audioCtx) {
+      this.audioCtx.destroy();
+    }
+  },
+
+  // 播放体温预警音频
+  playTemperatureWarning: function () {
+    if (this.data.isPlaying) {
+      console.log('音频正在播放，跳过');
+      return;
+    }
+
+    this.setData({ isPlaying: true });
+    this.audioCtx.play();
+  },
+
+  // 安排下一次预警（5秒后）
+  scheduleNextWarning: function () {
+    // 清除已有定时器
+    if (this.warningTimer) {
+      clearTimeout(this.warningTimer);
+    }
+    // 设置5秒后检查
+    this.warningTimer = setTimeout(() => {
+      if (this.data.warnings.temperature && !this.data.isPlaying) {
+        this.playTemperatureWarning();
+      }
     }, 5000);
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-    // 停止自动更新定时器
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-    // 停止自动更新定时器
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-  },
-
-  /**
-   * 检查MQTT连接状态
-   */
-  checkMqttStatus: function() {
-    this.setData({
-      isConnected: app.globalData.mqttConnected
-    });
-  },
-  
-  /**
-   * 从全局更新身体数据
-   */
-  updateBodyDataFromGlobal: function() {
-    if (app.globalData.bodyData) {
-      this.setData({
-        bodyData: app.globalData.bodyData
-      });
-    }
-  },
-  
-  /**
-   * 处理MQTT数据
-   */
-  handleMQTTData: function(e) {
+  handleMQTTData: function (e) {
     try {
       const message = e.detail.message;
+      console.log('[MQTT] 收到消息:', message);
       const data = JSON.parse(message);
-      
-      // 只更新有值的属性
       let newBodyData = { ...this.data.bodyData };
-      
+      let newWarnings = { ...this.data.warnings };
+      let needUpdate = false;
+      const now = Date.now();
+
       if (data.body_temp !== undefined) {
-        newBodyData.temperature = parseFloat(data.body_temp).toFixed(1);
+        const value = parseFloat(data.body_temp);
+        newBodyData.temperature = value.toFixed(1);
+        newWarnings.temperature = value < this.data.ranges.temperature.min || value > this.data.ranges.temperature.max;
+        // 体温异常时触发语音预警
+        if (newWarnings.temperature && !this.data.isPlaying && now - this.data.lastWarningTime > 5000) {
+          this.playTemperatureWarning();
+          this.setData({ lastWarningTime: now });
+        }
+        // 如果体温恢复正常，清除定时器
+        if (!newWarnings.temperature && this.warningTimer) {
+          clearTimeout(this.warningTimer);
+          this.warningTimer = null;
+        }
+        needUpdate = true;
       }
-      
+
       if (data.blood_oxygen !== undefined) {
-        newBodyData.oxygen = data.blood_oxygen.toString();
+        const value = parseInt(data.blood_oxygen);
+        newBodyData.oxygen = value.toString();
+        newWarnings.oxygen = value < this.data.ranges.oxygen.min || value > this.data.ranges.oxygen.max;
+        needUpdate = true;
       }
-      
+
       if (data.heart_rate !== undefined) {
-        newBodyData.heartRate = data.heart_rate.toString();
+        const value = parseInt(data.heart_rate);
+        newBodyData.heartRate = value.toString();
+        newWarnings.heartRate = value < this.data.ranges.heartRate.min || value > this.data.ranges.heartRate.max;
+        needUpdate = true;
       }
-      
+
       if (data.respiration_rate !== undefined) {
-        newBodyData.respRate = data.respiration_rate.toString();
+        const value = parseInt(data.respiration_rate);
+        newBodyData.respRate = value.toString();
+        newWarnings.respRate = value < this.data.ranges.respRate.min || value > this.data.ranges.respRate.max;
+        needUpdate = true;
       }
-      
-      this.setData({
-        bodyData: newBodyData
-      });
-      
+
+      if (needUpdate) {
+        this.setData({
+          bodyData: newBodyData,
+          warnings: newWarnings,
+          updateTimestamp: Date.now()
+        });
+      }
     } catch (error) {
-      console.error('解析MQTT数据错误:', error);
-    }
-  },
-
-  /**
-   * 判断指标值是否异常
-   */
-  /**
- * 判断指标值是否异常
- */
-isAbnormal: function (type, value) {
-  // 对于体温，当超过36℃时显示红色
-  if (type === 'temperature') {
-    // 首先确保转换为数字
-    const tempValue = parseFloat(value);
-    console.log('体温值:', value, '转换后:', tempValue, '是否大于36:', tempValue > 36);
-    return tempValue > 36;
-  }
-  
-  // 转为数字进行比较
-  const numValue = parseFloat(value);
-  const range = this.data.ranges[type];
-  
-  // 其他指标保持原有逻辑：若值不是数字或超出范围则视为异常
-  return isNaN(numValue) || numValue < range.min || numValue > range.max;
-},
-
-  /**
-   * 切换MQTT连接状态
-   */
-  toggleMqttConnection: function(e) {
-    const isChecked = e.detail.value;
-    
-    if (isChecked) {
-      // 连接MQTT
-      app.connectMqtt();
-      
-      wx.showToast({
-        title: '正在连接...',
-        icon: 'loading',
-        duration: 1500
-      });
-    } else {
-      // 断开MQTT
-      app.disconnectMqtt();
-      
-      wx.showToast({
-        title: '已断开连接',
-        icon: 'success',
-        duration: 1500
-      });
-      
-      // 立即更新状态
-      this.checkMqttStatus();
-    }
-  },
-
-  /**
-   * 处理主题输入变化
-   */
-  onTopicInput: function(e) {
-    const newValue = e.detail.value;
-    
-    // 检查是否与当前主题不同
-    if (newValue !== this.data.mqttConfig.subTopic) {
-      this.setData({
-        topicChanged: true,
-        newTopic: newValue
-      });
-    } else {
-      this.setData({
-        topicChanged: false,
-        newTopic: newValue
-      });
-    }
-  },
-
-  /**
-   * 更新订阅主题
-   */
-  updateSubscription: function() {
-    const newTopic = this.data.newTopic;
-    
-    // 检查主题是否为空
-    if (!newTopic || newTopic.trim() === '') {
-      wx.showToast({
-        title: '主题不能为空',
-        icon: 'error',
-        duration: 1500
-      });
-      return;
-    }
-    
-    // 保存新主题到全局配置
-    app.globalData.mqttConfig.subTopic = newTopic;
-    
-    // 更新本地显示
-    this.setData({
-      'mqttConfig.subTopic': newTopic,
-      topicChanged: false
-    });
-    
-    // 如果已连接，则需要重新订阅
-    if (this.data.isConnected) {
-      // 断开当前连接
-      app.disconnectMqtt();
-      
-      // 重新连接 (会使用新的主题订阅)
-      app.connectMqtt();
-      
-      wx.showToast({
-        title: '已更新订阅',
-        icon: 'success',
-        duration: 1500
-      });
-    } else {
-      wx.showToast({
-        title: '主题已保存',
-        icon: 'success',
-        duration: 1500
-      });
+      console.error('[MQTT] 解析数据错误:', error);
     }
   }
-}) 
+});

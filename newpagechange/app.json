@@ -2,7 +2,8 @@
   "pages": [
     "pages/warningmap/warningmap",
     "pages/body/body",
-    "pages/environment/environment"
+    "pages/environment/environment",
+    "pages/setting/setting"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -24,24 +25,27 @@
       },
       {
         "pagePath": "pages/body/body",
-        "text": "骑行场景",
+        "text": "人体监测",
         "iconPath": "images/body.png",
         "selectedIconPath": "images/body_selected.png"
       },
       {
         "pagePath": "pages/environment/environment",
-        "text": "工业场景",
+        "text": "综合监测",
         "iconPath": "images/environment.png",
         "selectedIconPath": "images/environment_selected.png"
+      },
+      {
+        "pagePath": "pages/setting/setting",
+        "text": "设置",
+        "iconPath": "images/setting.png",
+        "selectedIconPath": "images/settingred.png"
       }
     ]
   },
   "permission": {
     "scope.userLocation": {
       "desc": "您的位置信息将用于地图导航功能"
-    },
-    "scope.bluetooth": {
-      "desc": "您的蓝牙功能将用于连接监测设备"
     }
   },
   "requiredPrivateInfos": [
@@ -51,5 +55,4 @@
   "requiredBackgroundModes": [
     "location"
   ]
- 
-} 
+}

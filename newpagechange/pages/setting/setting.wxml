@@ -1,0 +1,33 @@
+<view class="container">
+  <view class="header">
+    <text class="title">设置</text>
+  </view>
+  <view class="control-panel">
+    <view class="section-title">MQTT控制</view>
+    <view class="mqtt-info">
+      <view class="info-item">
+        <text class="label">服务器:</text>
+        <text class="value">{{mqttConfig.host}}:{{mqttConfig.port}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">传感器主题:</text>
+        <input class="topic-input" value="{{sensorTopic}}" bindinput="inputSensorTopic" placeholder="请输入传感器主题" />
+      </view>
+      <view class="info-item">
+        <text class="label">预警主题:</text>
+        <input class="topic-input" value="{{warningTopic}}" bindinput="inputWarningTopic" placeholder="请输入预警主题" />
+      </view>
+      <view class="info-item">
+        <text class="label">状态:</text>
+        <text class="status {{isConnected ? 'connected' : ''}}">{{isConnected ? '已连接' : '未连接'}}</text>
+      </view>
+    </view>
+    <view class="action-buttons">
+      <button class="btn-primary" bindtap="{{isConnected ? 'disconnectMqtt' : 'connectMqtt'}}">
+        {{isConnected ? '断开MQTT' : '连接MQTT'}}
+      </button>
+      <button class="btn-primary" bindtap="changeTopics" disabled="{{!topicsChanged}}">更改主题</button>
+      <button class="btn-primary" bindtap="resetTopics" disabled="{{!topicsChanged}}">重置</button>
+    </view>
+  </view>
+</view>

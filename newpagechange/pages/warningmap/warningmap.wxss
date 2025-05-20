@@ -145,198 +145,19 @@
   align-items: center;
 }
 
-/* 车道分隔线 */
-.lane-divider {
-  width: 6rpx;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* 虚线 */
-.dash-line {
-  width: 6rpx;
-  height: 20rpx;
-  background-color: #ffffff;
-  margin: 5rpx 0;
-}
-
-/* 车辆图标 */
-.car-icon {
-  width: 100rpx;
-  height: 100rpx;
-  z-index: 100;
-  animation: pulse 1s infinite alternate;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-/* 车辆信息 */
-.car-info {
+/* 透明层样式 */
+.overlay {
   position: absolute;
-  top: 30%;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  border-radius: 5rpx;
-  padding: 5rpx 10rpx;
-  font-size: 20rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}/* pages/warningmap/warningmap.wxss */
-
-/* 整体容器 */
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100%;
-  position: relative;
-}
-
-/* 地图部分 */
-.map-container {
-  flex: 1;
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* 地图控制按钮 */
-.map-controls {
-  position: absolute;
-  right: 20rpx;
-  top: 20rpx;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-}
-
-.control-item {
-  width: 80rpx;
-  height: 80rpx;
-  background-color: #ffffff;
-  border-radius: 50%;
-  margin-bottom: 20rpx;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.control-item image {
-  width: 50rpx;
-  height: 50rpx;
-}
-
-/* 导航信息 */
-.nav-info {
-  position: absolute;
-  bottom: 10rpx;
+  top: 0;
   left: 0;
-  right: 0;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 20rpx;
-  border-radius: 10rpx;
-  margin: 0 20rpx;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-}
-
-.nav-info.navigating {
-  background-color: rgba(0, 145, 255, 0.9);
-}
-
-.nav-info.navigating text {
-  color: white;
-}
-
-.tips {
-  text-align: center;
-  font-size: 28rpx;
-  color: #666;
-}
-
-.highlight {
-  color: #0091ff;
-  font-weight: bold;
-}
-
-.destination, .navigating-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 28rpx;
-}
-
-.destination text, .navigating-info text {
-  margin-bottom: 10rpx;
-}
-
-.destination button, .navigating-info button {
-  margin-top: 10rpx;
-}
-
-/* 道路预警部分 */
-.warning-container {
-  flex: 1;
-  background-color: #222222;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.header {
-  padding: 20rpx 30rpx;
-  background-color: #333333;
-  border-bottom: 1rpx solid #444444;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-/* 道路容器 */
-.road-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 30rpx;
-  background-color: #222222;
-}
-
-/* 车道容器 */
-.lanes-container {
+  width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: stretch;
+  background-color: transparent;
 }
 
-/* 车道样式 */
-.lane {
-  flex: 1;
-  height: 100%;
-  background-color: #333333;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* 透明层闪烁效果 */
+.overlay.pulse-overlay {
+  animation: overlayPulse 1s ease-in-out infinite alternate;
 }
 
 /* 车道分隔线 */
@@ -357,28 +178,12 @@
   margin: 5rpx 0;
 }
 
-/* 车辆图标 */
-.car-icon {
-  width: 100rpx;
-  height: 100rpx;
-  z-index: 100;
-}
-
-/* 脉冲动画效果 */
-.pulse {
-  animation: pulsate 1s ease-in-out infinite alternate;
-  -webkit-animation: pulsate 1s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.7));
-}
-
-@keyframes pulsate {
+/* 透明层红色脉冲动画效果 */
+@keyframes overlayPulse {
   0% {
-    opacity: 0.7;
-    transform: scale(0.95);
+    background-color: transparent;
   }
   100% {
-    opacity: 1;
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 12px rgba(255, 90, 0, 0.9));
+    background-color: rgba(255, 0, 0, 0.5); /* 半透明红色 */
   }
-} 
+}

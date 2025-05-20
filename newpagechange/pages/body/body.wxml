@@ -1,86 +1,40 @@
-<!--pages/body/body.wxml-->
 <view class="container">
-  <view class="header">
-    <text class="title">骑行场景应用</text>
-  </view>
-  
-  <!-- 体征数据面板 - 四宫格布局 -->
   <view class="grid-panel">
-    <!-- 体温 -->
-    <view class="grid-card {{isAbnormal('temperature', bodyData.temperature) ? 'abnormal' : ''}}">
-      <view class="data-icon">
-        <image src="/images/temperature.png" mode="aspectFit"></image>
-      </view>
-      <view class="data-title">体温</view>
-      <view class="data-value">
+    <view class="{{warnings.temperature ? 'grid-card abnormal' : 'grid-card'}}">
+      <view class="data-icon"><image src="/images/temperature.png"></image></view>
+      <text class="data-title">体温</text>
+      <view class="{{warnings.temperature ? 'data-value abnormal' : 'data-value'}}">
         <text class="value-text">{{bodyData.temperature}}</text>
         <text class="value-unit">{{ranges.temperature.unit}}</text>
       </view>
-      <view class="data-range">{{ranges.temperature.min}}-{{ranges.temperature.max}}{{ranges.temperature.unit}}</view>
+      <text class="data-range">{{ranges.temperature.description}}</text>
     </view>
-    
-    <!-- 血氧 -->
-    <view class="grid-card {{isAbnormal('oxygen', bodyData.oxygen) ? 'abnormal' : ''}}">
-      <view class="data-icon">
-        <image src="/images/oxygen.png" mode="aspectFit"></image>
-      </view>
-      <view class="data-title">血氧含量</view>
-      <view class="data-value">
+    <view class="{{warnings.oxygen ? 'grid-card abnormal' : 'grid-card'}}">
+      <view class="data-icon"><image src="/images/oxygen.png"></image></view>
+      <text class="data-title">血氧含量</text>
+      <view class="{{warnings.oxygen ? 'data-value abnormal' : 'data-value'}}">
         <text class="value-text">{{bodyData.oxygen}}</text>
         <text class="value-unit">{{ranges.oxygen.unit}}</text>
       </view>
-      <view class="data-range">{{ranges.oxygen.min}}-{{ranges.oxygen.max}}{{ranges.oxygen.unit}}</view>
+      <text class="data-range">{{ranges.oxygen.description}}</text>
     </view>
-    
-    <!-- 心率 -->
-    <view class="grid-card {{isAbnormal('heartRate', bodyData.heartRate) ? 'abnormal' : ''}}">
-      <view class="data-icon">
-        <image src="/images/heart.png" mode="aspectFit"></image>
-      </view>
-      <view class="data-title">心跳频率</view>
-      <view class="data-value">
+    <view class="{{warnings.heartRate ? 'grid-card abnormal' : 'grid-card'}}">
+      <view class="data-icon"><image src="/images/heart.png"></image></view>
+      <text class="data-title">心跳频率</text>
+      <view class="{{warnings.heartRate ? 'data-value abnormal' : 'data-value'}}">
         <text class="value-text">{{bodyData.heartRate}}</text>
         <text class="value-unit">{{ranges.heartRate.unit}}</text>
       </view>
-      <view class="data-range">{{ranges.heartRate.min}}-{{ranges.heartRate.max}}{{ranges.heartRate.unit}}</view>
+      <text class="data-range">{{ranges.heartRate.description}}</text>
     </view>
-    
-    <!-- 呼吸频率 -->
-    <view class="grid-card {{isAbnormal('respRate', bodyData.respRate) ? 'abnormal' : ''}}">
-      <view class="data-icon">
-        <image src="/images/respiration.png" mode="aspectFit"></image>
-      </view>
-      <view class="data-title">呼吸频率</view>
-      <view class="data-value">
+    <view class="{{warnings.respRate ? 'grid-card abnormal' : 'grid-card'}}">
+      <view class="data-icon"><image src="/images/respiration.png"></image></view>
+      <text class="data-title">呼吸频率</text>
+      <view class="{{warnings.respRate ? 'data-value abnormal' : 'data-value'}}">
         <text class="value-text">{{bodyData.respRate}}</text>
         <text class="value-unit">{{ranges.respRate.unit}}</text>
       </view>
-      <view class="data-range">{{ranges.respRate.min}}-{{ranges.respRate.max}}{{ranges.respRate.unit}}</view>
+      <text class="data-range">{{ranges.respRate.description}}</text>
     </view>
   </view>
-  
-  <!-- MQTT连接控制面板 -->
-  <view class="mqtt-panel">
-    <view class="mqtt-title">
-      <text>MQTT连接控制</text>
-    </view>
-    <view class="mqtt-control">
-      <text class="mqtt-label">连接状态：</text>
-      <text class="mqtt-status {{isConnected ? 'connected' : 'disconnected'}}">{{isConnected ? '已连接' : '未连接'}}</text>
-      <switch checked="{{isConnected}}" bindchange="toggleMqttConnection" color="#1aad19" />
-    </view>
-    <view class="mqtt-info">
-      <view class="mqtt-info-item">
-        <text class="mqtt-info-label">服务器地址：</text>
-        <text class="mqtt-info-value">{{mqttConfig.host}}:{{mqttConfig.port}}</text>
-      </view>
-      <view class="mqtt-info-item">
-        <text class="mqtt-info-label">订阅主题：</text>
-        <input class="mqtt-topic-input" value="{{mqttConfig.subTopic}}" placeholder="请输入订阅主题" bindinput="onTopicInput" bindconfirm="updateSubscription" confirm-type="done" />
-      </view>
-      <view class="mqtt-button-row" wx:if="{{topicChanged}}">
-        <button class="btn-update-topic" size="mini" bindtap="updateSubscription">更新订阅</button>
-      </view>
-    </view>
-  </view>
-</view> 
+</view>

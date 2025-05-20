@@ -1,125 +1,131 @@
 App({
   globalData: {
-    userInfo: null,
-    // MQTT相关
     mqttClient: null,
     mqttConnected: false,
-    // MQTT配置
     mqttConfig: {
-      host: "broker.emqx.io",
+      host: "v6980369.ala.dedicated.aliyun.emqxcloud.cn",
       port: 8084,
-      subTopic: "/wechat_ros/sensor_data",
+      sensorTopic: "/wechat_ros/sensor_data",
+      warningTopic: "/wechat_ros/warning_data",
       username: "test",
       password: "test",
-      reconnectPeriod: 1000, // 1000毫秒，设置为 0 禁用自动重连，两次重新连接之间的间隔时间
-      connectTimeout: 30 * 1000, // 30秒，连接超时时间
+      reconnectPeriod: 3000,
+      connectTimeout: 30 * 1000,
     },
-    // 数据存储
     bodyData: {
-      temperature: '36.5', // 体温(℃)
-      oxygen: '98',        // 血氧(%)
-      heartRate: '75',     // 心率(bpm)
-      respRate: '16'       // 呼吸频率(次/分)
+      temperature: '36.5',
+      oxygen: '98',
+      heartRate: '75',
+      respRate: '16'
     },
     environmentData: {
-      hcho: 0.05,  // 甲醛：mg/m³
-      o2: 20.9,    // 氧气：%
-      co2: 400,    // 二氧化碳：ppm
-      tvoc: 0.2,   // 总挥发性有机物：mg/m³
+      hcho: 0.05,
+      o2: 20.9,
+      co2: 400,
+      tvoc: 0.2,
+    },
+    warningData: {
+      left: 0,
+      middle: 0,
+      right: 0
     }
   },
-  
+
   onLaunch() {
-    // 启动时连接MQTT
     this.connectMqtt();
   },
-  
-  onHide() {
-    // 当小程序隐藏时断开MQTT
-    this.disconnectMqtt();
-  },
-  
-  // 连接MQTT服务器
-  connectMqtt: function() {
+
+  connectMqtt: function () {
     var that = this;
     var mqtt = require('./utils/mqtt.min.js');
-    
+
     try {
-      console.log('正在连接MQTT服务器...');
+      console.log('正在连接MQTT服务器...', this.globalData.mqttConfig);
       const clientId = 'wx_' + Math.random().toString(16).substr(2, 8);
       const config = this.globalData.mqttConfig;
-      
-      // 连接MQTT服务器
-      const client = mqtt.connect(`wxs://${config.host}:${config.port}/mqtt`, {
+
+      const connectUrl = `wxs://${config.host}:${config.port}/mqtt`;
+      console.log('连接URL:', connectUrl);
+
+      const client = mqtt.connect(connectUrl, {
         username: config.username,
         password: config.password,
         reconnectPeriod: config.reconnectPeriod,
         connectTimeout: config.connectTimeout,
         clientId,
+        clean: true,
+        protocolVersion: 4,
+        protocol: 'wxs',
+        wsOptions: {
+          createWebSocket: function (url) {
+            return wx.connectSocket({
+              url: url,
+              success: () => {
+                console.log('WebSocket连接成功');
+              },
+              fail: (err) => {
+                console.error('WebSocket连接失败:', err);
+              }
+            });
+          }
+        }
       });
-      
-      // 保存客户端实例
+
       this.globalData.mqttClient = client;
-      
-      // 连接成功回调
+
       client.on('connect', (e) => {
         console.log('MQTT服务器连接成功');
         that.globalData.mqttConnected = true;
-        
-        // 订阅主题
-        client.subscribe(config.subTopic, {qos: 0}, function(err) {
-          if (!err) {
-            console.log('主题订阅成功:', config.subTopic);
-            wx.showToast({
-              title: '已连接MQTT',
-              icon: 'success'
-            });
-          } else {
-            console.error('主题订阅失败:', err);
-            wx.showToast({
-              title: '订阅失败',
-              icon: 'error'
-            });
-          }
+
+        // 订阅所有主题
+        const topics = [config.sensorTopic, config.warningTopic];
+        topics.forEach(topic => {
+          client.subscribe(topic, { qos: 0 }, function (err) {
+            if (!err) {
+              console.log('主题订阅成功:', topic);
+              wx.showToast({
+                title: '已连接MQTT',
+                icon: 'success'
+              });
+            } else {
+              console.error('主题订阅失败:', topic, err);
+              wx.showToast({
+                title: '订阅失败',
+                icon: 'error'
+              });
+            }
+          });
         });
       });
-      
-      // 接收消息回调
-      client.on('message', function(topic, message) {
+
+      client.on('message', function (topic, message) {
         console.log('收到消息:', topic, message.toString());
         var msg = message.toString();
-        
-        // 解析收到的消息并更新数据
-        that.parseMessage(msg);
+        that.parseMessage(topic, msg);
       });
-      
-      // 重连回调
+
       client.on('reconnect', (error) => {
         console.log('正在重连', error);
         that.globalData.mqttConnected = false;
       });
-      
-      // 错误回调
+
       client.on('error', (error) => {
         console.log('连接失败', error);
         that.globalData.mqttConnected = false;
-        
         wx.showToast({
           title: '连接失败',
           icon: 'error'
         });
       });
-      
-      // 离线回调
+
       client.on('offline', () => {
         console.log('MQTT客户端离线');
         that.globalData.mqttConnected = false;
       });
-      
+
     } catch (error) {
       console.error('MQTT连接错误:', error);
       that.globalData.mqttConnected = false;
-      
       wx.showToast({
         title: '连接错误',
         icon: 'error'
@@ -127,87 +133,158 @@ App({
     }
   },
 
-  // 解析MQTT消息
-  parseMessage: function(message) {
+  parseMessage: function (topic, message) {
     try {
-      // 尝试将消息解析为JSON
+      console.log('开始解析消息:', topic, message);
       var data = JSON.parse(message);
       console.log('解析后的数据:', data);
-      
-      // 获取当前所有页面
+
       const pages = getCurrentPages();
-      
-      // 判断数据类型并更新相应的全局数据
-      if (this.containsBodyData(data)) {
-        // 更新身体数据
-        this.updateBodyData(data);
-        
-        // 分发到body页面
-        const bodyPage = pages.find(page => page.route === 'pages/body/body');
-        if (bodyPage && bodyPage.handleMQTTData) {
-          bodyPage.handleMQTTData({detail: {message: message}});
+
+      if (topic === this.globalData.mqttConfig.sensorTopic) {
+        if (this.containsBodyData(data)) {
+          console.log('检测到身体数据:', data);
+          this.updateBodyData(data);
+          const bodyPage = pages.find(page => page.route === 'pages/body/body');
+          if (bodyPage && bodyPage.handleMQTTData) {
+            console.log('分发数据到body页面');
+            bodyPage.handleMQTTData({ detail: { message: message } });
+          }
+        }
+
+        if (this.containsEnvironmentData(data)) {
+          console.log('检测到环境数据:', data);
+          this.updateEnvironmentData(data);
+          const envPage = pages.find(page => page.route === 'pages/environment/environment');
+          if (envPage && envPage.handleMQTTData) {
+            console.log('分发数据到environment页面');
+            envPage.handleMQTTData({ detail: { message: message } });
+          }
+        }
+      } else if (topic === this.globalData.mqttConfig.warningTopic) {
+        if (this.containsWarningData(data)) {
+          console.log('检测到预警数据:', data);
+          this.updateWarningData(data);
+          const warningPage = pages.find(page => page.route === 'pages/warningmap/warningmap');
+          if (warningPage && warningPage.handleWarningData) {
+            console.log('分发数据到warningmap页面');
+            warningPage.handleWarningData({ detail: { warningData: data } });
+          }
         }
       }
-      
-      if (this.containsEnvironmentData(data)) {
-        // 更新环境数据
-        this.updateEnvironmentData(data);
-        
-        // 分发到environment页面
-        const envPage = pages.find(page => page.route === 'pages/environment/environment');
-        if (envPage && envPage.handleMQTTData) {
-          envPage.handleMQTTData({detail: {message: message}});
-        }
-      }
-      
     } catch (e) {
       console.error('消息解析失败:', e);
+      console.error('原始消息:', message);
     }
   },
-  
-  // 判断是否包含身体数据字段
-  containsBodyData: function(data) {
-    return data.heart_rate !== undefined || 
-           data.blood_oxygen !== undefined || 
-           data.respiration_rate !== undefined || 
-           data.body_temp !== undefined;
+
+  containsBodyData: function (data) {
+    return data.heart_rate !== undefined ||
+           data.blood_oxygen !== undefined ||
+           data.respiration_rate !== undefined ||
+           data.body_temp !== undefined ||
+           data.hbp !== undefined ||
+           data.dbp !== undefined;
   },
-  
-  // 判断是否包含环境数据字段
-  containsEnvironmentData: function(data) {
-    return data.tvoc !== undefined || 
-           data.hcho !== undefined || 
-           data.co2 !== undefined || 
+
+  containsEnvironmentData: function (data) {
+    return data.tvoc !== undefined ||
+           data.hcho !== undefined ||
+           data.co2 !== undefined ||
            data.o2 !== undefined;
   },
-  
-  // 更新身体数据
-  updateBodyData: function(data) {
+
+  containsWarningData: function (data) {
+    return data.left !== undefined ||
+           data.middle !== undefined ||
+           data.right !== undefined;
+  },
+
+  updateBodyData: function (data) {
     let bodyData = this.globalData.bodyData;
-    
-    // 更新数据，保留原有格式
-    if (data.heart_rate !== undefined) bodyData.heartRate = data.heart_rate.toString();
-    if (data.blood_oxygen !== undefined) bodyData.oxygen = data.blood_oxygen.toString();
-    if (data.respiration_rate !== undefined) bodyData.respRate = data.respiration_rate.toString();
-    if (data.body_temp !== undefined) bodyData.temperature = parseFloat(data.body_temp).toFixed(1);
-    
-    this.globalData.bodyData = bodyData;
+    let updated = false;
+
+    if (data.heart_rate !== undefined) {
+      bodyData.heartRate = data.heart_rate.toString();
+      updated = true;
+    }
+    if (data.blood_oxygen !== undefined) {
+      bodyData.oxygen = data.blood_oxygen.toString();
+      updated = true;
+    }
+    if (data.respiration_rate !== undefined) {
+      bodyData.respRate = data.respiration_rate.toString();
+      updated = true;
+    }
+    if (data.body_temp !== undefined) {
+      bodyData.temperature = parseFloat(data.body_temp).toFixed(1);
+      updated = true;
+    }
+
+    if (updated) {
+      this.globalData.bodyData = { ...bodyData };
+      const pages = getCurrentPages();
+      const bodyPage = pages.find(page => page.route === 'pages/body/body');
+      if (bodyPage && !bodyPage.__hidden__) {
+        bodyPage.updateBodyDataFromGlobal && bodyPage.updateBodyDataFromGlobal();
+      }
+    }
   },
-  
-  // 更新环境数据
-  updateEnvironmentData: function(data) {
+
+  updateEnvironmentData: function (data) {
     let envData = this.globalData.environmentData;
-    
-    if (data.tvoc !== undefined) envData.tvoc = parseFloat(data.tvoc);
-    if (data.hcho !== undefined) envData.hcho = parseFloat(data.hcho);
-    if (data.co2 !== undefined) envData.co2 = parseFloat(data.co2);
-    if (data.o2 !== undefined) envData.o2 = parseFloat(parseFloat(data.o2).toFixed(1));
-    
-    this.globalData.environmentData = envData;
+    let updated = false;
+
+    if (data.tvoc !== undefined) {
+      envData.tvoc = parseFloat(data.tvoc).toFixed(3);
+      updated = true;
+    }
+    if (data.hcho !== undefined) {
+      envData.hcho = parseFloat(data.hcho).toFixed(3);
+      updated = true;
+    }
+    if (data.co2 !== undefined) {
+      envData.co2 = parseFloat(data.co2);
+      updated = true;
+    }
+    if (data.o2 !== undefined) {
+      envData.o2 = parseFloat(parseFloat(data.o2).toFixed(1));
+      updated = true;
+    }
+
+    if (updated) {
+      this.globalData.environmentData = envData;
+      const pages = getCurrentPages();
+      const envPage = pages.find(page => page.route === 'pages/environment/environment');
+      if (envPage && !envPage.__hidden__) {
+        envPage.updateEnvDataFromGlobal && envPage.updateEnvDataFromGlobal();
+      }
+    }
   },
-  
-  // 断开MQTT连接
-  disconnectMqtt: function() {
+
+  updateWarningData: function (data) {
+    let warningData = this.globalData.warningData;
+    let updated = false;
+
+    if (data.left !== undefined) {
+      warningData.left = data.left;
+      updated = true;
+    }
+    if (data.middle !== undefined) {
+      warningData.middle = data.middle;
+      updated = true;
+    }
+    if (data.right !== undefined) {
+      warningData.right = data.right;
+      updated = true;
+    }
+
+    if (updated) {
+      this.globalData.warningData = { ...warningData };
+    }
+  },
+
+  disconnectMqtt: function () {
     if (this.globalData.mqttClient) {
       this.globalData.mqttClient.end();
       this.globalData.mqttClient = null;
@@ -215,10 +292,9 @@ App({
       console.log('MQTT连接已断开');
     }
   },
-  
-  // 重新连接MQTT
-  reconnectMqtt: function() {
+
+  reconnectMqtt: function () {
     this.disconnectMqtt();
     this.connectMqtt();
   }
-}) 
+});

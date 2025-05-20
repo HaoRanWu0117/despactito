@@ -1,0 +1,113 @@
+/* pages/setting/setting.wxss */
+.container {
+  padding: 0;
+  margin: 0;
+  background-color: #f6f6f6;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rpx 0;
+}
+
+.title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333333;
+  position: relative;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -4rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 4rpx;
+  background-color: #1aad19;
+  border-radius: 2rpx;
+}
+
+.control-panel {
+  background-color: #ffffff;
+  border-radius: 8rpx;
+  padding: 8rpx;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.05);
+  margin: 8rpx;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+  padding-left: 14rpx;
+  border-left: 5rpx solid #1aad19;
+}
+
+.mqtt-info {
+  margin-bottom: 8rpx;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+
+.label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.value {
+  font-size: 24rpx;
+  color: #333;
+}
+
+.topic-input {
+  font-size: 24rpx;
+  color: #333;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 5rpx;
+  padding: 6rpx;
+  width: 68%;
+}
+
+.status {
+  font-size: 24rpx;
+  color: #ff4d4f;
+}
+
+.status.connected {
+  color: #1aad19;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.btn-primary {
+  width: 32%;
+  background-color: #1296db;
+  color: #ffffff;
+  font-size: 24rpx;
+  padding: 10rpx 0;
+  border-radius: 6rpx;
+  text-align: center;
+}
+
+.btn-primary[disabled] {
+  background-color: #cccccc;
+}
